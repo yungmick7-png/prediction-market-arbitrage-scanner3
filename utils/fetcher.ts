@@ -47,14 +47,13 @@ const POLITICAL_KEYWORDS = [
 
 export async function fetchPolymarketEvents(): Promise<PolymarketEvent[]> {
   try {
-    // Fetch active events - the API returns events directly as an array
     const response = await fetch(
       `${POLYMARKET_API}?active=true&closed=false&limit=100`,
       {
         headers: {
           Accept: "application/json",
         },
-        next: { revalidate: 60 }, // Cache for 60 seconds
+        next: { revalidate: 60 },
       }
     );
 
@@ -64,12 +63,10 @@ export async function fetchPolymarketEvents(): Promise<PolymarketEvent[]> {
 
     const data = await response.json();
 
-    // Handle both array response and object with events property
     const events: PolymarketEvent[] = Array.isArray(data)
       ? data
       : data.events || data.data || [];
 
-    // Filter for political/election events
     return events.filter((event) => {
       const text = `${event.title} ${event.description || ""} ${event.slug}`.toLowerCase();
       const tags = (event.tags || []).map((t) => t.toLowerCase());
@@ -111,7 +108,6 @@ export async function fetchKalshiEvents(): Promise<KalshiEvent[]> {
     const data: KalshiEventsResponse = await response.json();
     const events = data.events || [];
 
-    // Filter for political events
     return events.filter((event) => {
       const text = `${event.title} ${event.sub_title || ""} ${event.category}`.toLowerCase();
 
@@ -137,7 +133,6 @@ function extractKeywords(text: string): string[] {
     .split(/\s+/)
     .filter((w) => w.length > 2);
 
-  // Add compound keywords
   const compounds: string[] = [];
   if (normalized.includes("trump")) compounds.push("trump");
   if (normalized.includes("biden")) compounds.push("biden");
@@ -170,23 +165,18 @@ export function normalizePolymarketEvents(
     for (const market of event.markets || []) {
       if (market.closed || !market.active) continue;
 
-      // Parse outcome prices - they come as JSON string
       let yesPrice = 0;
       try {
         const prices = JSON.parse(market.outcomePrices || "[]");
         const outcomes = JSON.parse(market.outcomes || '["Yes", "No"]');
 
-        // Find the "Yes" outcome price
         const yesIndex = outcomes.findIndex(
           (o: string) => o.toLowerCase() === "yes"
         );
         yesPrice = yesIndex >= 0 ? parseFloat(prices[yesIndex]) : parseFloat(prices[0]);
-
-        // Convert decimal to cents (0.55 -> 55)
         yesPrice = Math.round(yesPrice * 100);
       } catch {
-        // If parsing fails, try direct number
-        yesPrice = 50; // Default to 50%
+        yesPrice = 50;
       }
 
       const eventName = market.groupItemTitle || market.question || event.title;
@@ -215,9 +205,7 @@ export function normalizeKalshiEvents(
     for (const market of event.markets || []) {
       if (market.status !== "active") continue;
 
-      // Kalshi prices are already in cents
       const yesPrice = market.yes_bid || market.last_price || 50;
-
       const eventName = market.title || event.title;
 
       markets.push({
@@ -243,24 +231,26 @@ function calculateMatchScore(
   poly: NormalizedPolyMarket,
   kalshi: NormalizedKalshiMarket
 ): number {
-  const polyKeywords = new Set(poly.keywords);
-  const kalshiKeywords = new Set(kalshi.keywords);
+  const polyKeywords = poly.keywords;
+  const kalshiKeywords = kalshi.keywords;
 
   // Count matching keywords
   let matches = 0;
-  for (const kw of polyKeywords) {
-    if (kalshiKeywords.has(kw)) matches++;
+  for (let i = 0; i < polyKeywords.length; i++) {
+    if (kalshiKeywords.includes(polyKeywords[i])) matches++;
   }
 
   // Calculate Jaccard similarity
-  const union = new Set([...polyKeywords, ...kalshiKeywords]);
-  const jaccard = matches / union.size;
+  const unionSet = new Set([...polyKeywords, ...kalshiKeywords]);
+  const unionSize = unionSet.size;
+  const jaccard = matches / unionSize;
 
   // Boost for key political terms
   const keyTerms = ["trump", "biden", "harris", "president", "2024", "winner"];
   let keyTermBoost = 0;
-  for (const term of keyTerms) {
-    if (polyKeywords.has(term) && kalshiKeywords.has(term)) {
+  for (let i = 0; i < keyTerms.length; i++) {
+    const term = keyTerms[i];
+    if (polyKeywords.includes(term) && kalshiKeywords.includes(term)) {
       keyTermBoost += 0.15;
     }
   }
@@ -281,7 +271,6 @@ export function normalizeAndMatch(
   const unifiedMarkets: UnifiedMarket[] = [];
   const usedKalshi = new Set<string>();
 
-  // Try to match each Polymarket market with Kalshi
   for (const poly of polyMarkets) {
     let bestMatch: NormalizedKalshiMarket | null = null;
     let bestScore = 0;
@@ -325,7 +314,6 @@ export function normalizeAndMatch(
             : null,
       });
     } else {
-      // Add Polymarket-only markets
       unifiedMarkets.push({
         id: poly.id,
         eventName: poly.eventName,
@@ -345,7 +333,6 @@ export function normalizeAndMatch(
     }
   }
 
-  // Add remaining Kalshi-only markets
   for (const kalshi of kalshiMarkets) {
     if (!usedKalshi.has(kalshi.ticker)) {
       unifiedMarkets.push({
@@ -367,12 +354,11 @@ export function normalizeAndMatch(
     }
   }
 
-  // Sort by spread percentage (highest first)
   return unifiedMarkets.sort((a, b) => b.spreadPercent - a.spreadPercent);
 }
 
 // ============================================
-// DUMMY DATA (Fallback when APIs are blocked)
+// DUMMY DATA
 // ============================================
 
 export function getDummyData(): UnifiedMarket[] {
@@ -640,7 +626,6 @@ export async function fetchAllMarkets(): Promise<{
 
     const unifiedMarkets = normalizeAndMatch(polyMarkets, kalshiMarkets);
 
-    // If we got very few results, supplement with dummy data
     if (unifiedMarkets.length < 3) {
       return {
         markets: getDummyData(),
