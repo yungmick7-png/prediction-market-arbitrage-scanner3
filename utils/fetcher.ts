@@ -150,7 +150,7 @@ function extractKeywords(text: string): string[] {
   if (normalized.includes("win") || normalized.includes("winner"))
     compounds.push("winner");
 
-  return [...new Set([...normalized, ...compounds])];
+  return Array.from(new Set([...normalized, ...compounds]));
 }
 
 function normalizeEventName(name: string): string {
