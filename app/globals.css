@@ -1,0 +1,227 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Root Variables */
+:root {
+  --background: #0a0a0a;
+  --foreground: #e5e5e5;
+  --card: #111111;
+  --card-foreground: #e5e5e5;
+  --border: #1f1f1f;
+  --primary: #10b981;
+  --primary-foreground: #ffffff;
+  --muted: #171717;
+  --muted-foreground: #737373;
+}
+
+/* Base Styles */
+html {
+  color-scheme: dark;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "rlig" 1, "calt" 1;
+}
+
+/* Font Classes */
+.font-sans {
+  font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, SFMono-Regular, "SF Mono",
+    Menlo, Monaco, Consolas, monospace;
+}
+
+/* Custom Scrollbar - DefiLlama Style */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #2a2a2a;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3a3a3a;
+}
+
+/* Selection */
+::selection {
+  background-color: rgba(16, 185, 129, 0.3);
+  color: #ffffff;
+}
+
+/* Focus Styles */
+*:focus-visible {
+  outline: 2px solid rgba(16, 185, 129, 0.5);
+  outline-offset: 2px;
+}
+
+/* Table Styles */
+table {
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+/* Animation Utilities */
+@keyframes pulse-subtle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.animate-pulse-subtle {
+  animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Custom Checkbox Styles */
+input[type="checkbox"] {
+  cursor: pointer;
+  accent-color: #10b981;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #10b981;
+  border-color: #10b981;
+}
+
+/* Select Styles */
+select {
+  cursor: pointer;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2rem;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Loading Skeleton Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.05) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Responsive Table */
+@media (max-width: 640px) {
+  .overflow-x-auto {
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Hover States for Table Rows */
+tbody tr {
+  transition: background-color 0.15s ease;
+}
+
+/* Link Hover Effects */
+a {
+  transition: color 0.15s ease;
+}
+
+/* Button Base Styles */
+button {
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+/* Custom Price Colors */
+.price-green {
+  color: #10b981;
+}
+
+.price-neutral {
+  color: #9ca3af;
+}
+
+/* Spread Badge Variants */
+.spread-high {
+  background-color: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+}
+
+.spread-medium {
+  background-color: rgba(234, 179, 8, 0.1);
+  color: #eab308;
+}
+
+.spread-low {
+  background-color: rgba(107, 114, 128, 0.2);
+  color: #6b7280;
+}
+
+/* Grid Pattern Background (Optional) */
+.bg-grid-pattern {
+  background-image: linear-gradient(
+      rgba(255, 255, 255, 0.02) 1px,
+      transparent 1px
+    ),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Noise Texture Overlay (Optional) */
+.noise-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Tailwind Layer Extensions */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
+}
